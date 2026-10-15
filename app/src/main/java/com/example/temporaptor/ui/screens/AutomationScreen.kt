@@ -30,7 +30,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RangeSlider
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -120,152 +119,83 @@ fun AutomationScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Section 1: Threshold Sliders
-        Text(
-            text = "Umbrales Objetivo del Terrario",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+        // 1. Temperature Range Automation Slider Card
+        ThresholdSliderCard(
+            title = "Rango de Temperatura Ideal (°C)",
+            subtitle = "Sonda Térmica Principal",
+            icon = Icons.Default.Thermostat,
+            accentColor = TempOrange,
+            minValue = minTemp,
+            maxValue = maxTemp,
+            rangeBounds = 15f..45f,
+            unit = "°C",
+            onRangeChange = { newMin, newMax ->
+                minTemp = newMin
+                maxTemp = newMax
+            }
         )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Temperature Slider Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Thermostat, contentDescription = null, tint = TempOrange)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Rango Temperatura", fontWeight = FontWeight.Bold)
-                    }
-                    Text(
-                        text = "${String.format(Locale.getDefault(), "%.1f", minTemp)}° - ${String.format(Locale.getDefault(), "%.1f", maxTemp)}°C",
-                        fontWeight = FontWeight.Bold,
-                        color = TempOrange
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                RangeSlider(
-                    value = minTemp..maxTemp,
-                    onValueChange = { range ->
-                        minTemp = range.start
-                        maxTemp = range.endInclusive
-                    },
-                    valueRange = 15f..42f,
-                    steps = 54
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Air Humidity Slider Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.WaterDrop, contentDescription = null, tint = AirHumidityBlue)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Humedad del Aire", fontWeight = FontWeight.Bold)
-                    }
-                    Text(
-                        text = "${minAir.toInt()}% - ${maxAir.toInt()}%",
-                        fontWeight = FontWeight.Bold,
-                        color = AirHumidityBlue
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                RangeSlider(
-                    value = minAir..maxAir,
-                    onValueChange = { range ->
-                        minAir = range.start
-                        maxAir = range.endInclusive
-                    },
-                    valueRange = 20f..95f,
-                    steps = 75
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Soil Humidity Slider Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Grass, contentDescription = null, tint = SoilMoistureCyan)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Humedad de Tierra (Sustrato)", fontWeight = FontWeight.Bold)
-                    }
-                    Text(
-                        text = "${minSoil.toInt()}% - ${maxSoil.toInt()}%",
-                        fontWeight = FontWeight.Bold,
-                        color = SoilMoistureCyan
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                RangeSlider(
-                    value = minSoil..maxSoil,
-                    onValueChange = { range ->
-                        minSoil = range.start
-                        maxSoil = range.endInclusive
-                    },
-                    valueRange = 10f..90f,
-                    steps = 80
-                )
-            }
-        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // 2. Air Humidity Range Automation Slider Card
+        ThresholdSliderCard(
+            title = "Humedad del Aire Ideal (%)",
+            subtitle = "Sensor Higrómetro Ambiental",
+            icon = Icons.Default.WaterDrop,
+            accentColor = AirHumidityBlue,
+            minValue = minAir,
+            maxValue = maxAir,
+            rangeBounds = 20f..95f,
+            unit = "%",
+            onRangeChange = { newMin, newMax ->
+                minAir = newMin
+                maxAir = newMax
+            }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 3. Substrate Soil Humidity Range Automation Slider Card
+        ThresholdSliderCard(
+            title = "Humedad de Tierra (Sustrato) (%)",
+            subtitle = "Sensor Capacitivo de Suelo",
+            icon = Icons.Default.Grass,
+            accentColor = SoilMoistureCyan,
+            minValue = minSoil,
+            maxValue = maxSoil,
+            rangeBounds = 10f..90f,
+            unit = "%",
+            onRangeChange = { newMin, newMax ->
+                minSoil = newMin
+                maxSoil = newMax
+            }
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Save Thresholds CTA Button
         Button(
             onClick = {
                 onSaveThresholds(minTemp, maxTemp, minAir, maxAir, minSoil, maxSoil)
             },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
-            Text("Guardar Umbrales Objetivo", fontWeight = FontWeight.Bold, color = Color.White)
+            Text(
+                text = "Guardar Nuevos Umbrales de Automatización",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(28.dp))
 
-        // Section 2: Smart Automations
+        // Section Title: Automation Regules & Switches
         Text(
-            text = "Reglas de Automatización Inteligente",
+            text = "Reglas de Automatización IoT",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -273,125 +203,217 @@ fun AutomationScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        AutomationSwitchRow(
-            title = "Auto-Nebulización de Aire",
-            subtitle = "Activar nebulizador automáticamente si la humedad ambiental cae de ${minAir.toInt()}%",
-            icon = Icons.Default.Opacity,
-            iconTint = AirHumidityBlue,
-            checked = autoMistEnabled,
-            onCheckedChange = { autoMistEnabled = it }
-        )
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                AutomationToggleRow(
+                    title = "Lluvia / Nebulización Automática",
+                    subtitle = "Activa nebulizador si la humedad del aire cae del mínimo",
+                    icon = Icons.Default.Opacity,
+                    checked = autoMistEnabled,
+                    onCheckedChange = { autoMistEnabled = it }
+                )
 
-        Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-        AutomationSwitchRow(
-            title = "Auto-Riego de Sustrato",
-            subtitle = "Goteo automático si la humedad de la tierra cae de ${minSoil.toInt()}%",
-            icon = Icons.Default.Grass,
-            iconTint = SoilMoistureCyan,
-            checked = autoSoilIrrigationEnabled,
-            onCheckedChange = { autoSoilIrrigationEnabled = it }
-        )
+                AutomationToggleRow(
+                    title = "Riego Automático de Sustrato",
+                    subtitle = "Humedece la tierra mediante goteo inteligente si está seca",
+                    icon = Icons.Default.Grass,
+                    checked = autoSoilIrrigationEnabled,
+                    onCheckedChange = { autoSoilIrrigationEnabled = it }
+                )
 
-        Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-        AutomationSwitchRow(
-            title = "Corte Térmico de Seguridad",
-            subtitle = "Apagar lámpara de calor si la temperatura supera los $maxTemp°C",
-            icon = Icons.Default.Thermostat,
-            iconTint = TempOrange,
-            checked = thermalCutoffEnabled,
-            onCheckedChange = { thermalCutoffEnabled = it }
-        )
+                AutomationToggleRow(
+                    title = "Corte Térmico de Seguridad",
+                    subtitle = "Apaga lámparas de calor si se supera la temperatura máxima",
+                    icon = Icons.Default.Thermostat,
+                    checked = thermalCutoffEnabled,
+                    onCheckedChange = { thermalCutoffEnabled = it }
+                )
 
-        Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-        AutomationSwitchRow(
-            title = "Descenso Térmico Nocturno",
-            subtitle = "Bajar temperatura deseada en -3°C entre 22:00 y 07:00",
-            icon = Icons.Default.Nightlight,
-            iconTint = MaterialTheme.colorScheme.secondary,
-            checked = nightModeEnabled,
-            onCheckedChange = { nightModeEnabled = it }
-        )
+                AutomationToggleRow(
+                    title = "Modo Ciclo Nocturno",
+                    subtitle = "Ajusta la temperatura 3°C más baja durante la noche",
+                    icon = Icons.Default.Nightlight,
+                    checked = nightModeEnabled,
+                    onCheckedChange = { nightModeEnabled = it }
+                )
 
-        Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-        AutomationSwitchRow(
-            title = "Alertas PUSH en Celular",
-            subtitle = "Notificar inmediatamente cuando un parámetro esté en estado Crítico",
-            icon = Icons.Default.NotificationsActive,
-            iconTint = MaterialTheme.colorScheme.primary,
-            checked = pushAlertsEnabled,
-            onCheckedChange = { pushAlertsEnabled = it }
-        )
+                AutomationToggleRow(
+                    title = "Alertas Emergentes al Móvil",
+                    subtitle = "Avisos instantáneos ante fallos o variaciones bruscas",
+                    icon = Icons.Default.NotificationsActive,
+                    checked = pushAlertsEnabled,
+                    onCheckedChange = { pushAlertsEnabled = it }
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
 @Composable
-private fun AutomationSwitchRow(
+private fun ThresholdSliderCard(
     title: String,
     subtitle: String,
     icon: ImageVector,
-    iconTint: Color,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    accentColor: Color,
+    minValue: Float,
+    maxValue: Float,
+    rangeBounds: ClosedFloatingPointRange<Float>,
+    unit: String,
+    onRangeChange: (newMin: Float, newMax: Float) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Column(modifier = Modifier.padding(18.dp)) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Surface(
-                    shape = CircleShape,
-                    color = iconTint.copy(alpha = 0.15f),
-                    modifier = Modifier.size(38.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = title,
-                            tint = iconTint,
-                            modifier = Modifier.size(20.dp)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        shape = CircleShape,
+                        color = accentColor.copy(alpha = 0.15f),
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = title,
+                                tint = accentColor,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Values Display Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = String.format(Locale.getDefault(), "Mínimo: %.1f%s", minValue, unit),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = accentColor
+                )
+
+                Text(
+                    text = String.format(Locale.getDefault(), "Máximo: %.1f%s", maxValue, unit),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = accentColor
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Dual Slider (RangeSlider)
+            RangeSlider(
+                value = minValue..maxValue,
+                onValueChange = { range ->
+                    onRangeChange(range.start, range.endInclusive)
+                },
+                valueRange = rangeBounds,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Composable
+private fun AutomationToggleRow(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f)
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
-            Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange
-            )
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 11.sp
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
     }
 }

@@ -13,12 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.temporaptor.ui.components.TurtleHeadIcon
 import com.example.temporaptor.ui.theme.EmeraldAccent
 import com.example.temporaptor.ui.theme.JungleGreenPrimary
 import kotlinx.coroutines.delay
@@ -71,7 +67,7 @@ fun SplashScreen(
                 brush = Brush.verticalGradient(
                     colors = listOf(
                         JungleGreenPrimary,
-                        Color(0xFF0A2214)
+                        Color(0xFF081A11)
                     )
                 )
             ),
@@ -84,19 +80,14 @@ fun SplashScreen(
         ) {
             Surface(
                 shape = CircleShape,
-                color = Color.White.copy(alpha = 0.15f),
+                color = Color.White.copy(alpha = 0.12f),
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(130.dp)
                     .scale(scale.value)
                     .alpha(alpha.value)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Default.Pets,
-                        contentDescription = "TempoRaptor Logo",
-                        tint = EmeraldAccent,
-                        modifier = Modifier.size(64.dp)
-                    )
+                    TurtleHeadIcon(size = 76.dp)
                 }
             }
 
@@ -135,7 +126,7 @@ fun SplashScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Verificando sensores y perfil...",
+                text = "Verificando sensores IoT y perfil...",
                 fontSize = 12.sp,
                 color = Color.White.copy(alpha = 0.6f),
                 modifier = Modifier.alpha(alpha.value)

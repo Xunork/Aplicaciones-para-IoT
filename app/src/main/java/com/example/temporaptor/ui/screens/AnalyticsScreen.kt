@@ -1,7 +1,6 @@
 package com.example.temporaptor.ui.screens
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,18 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Grass
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Thermostat
-import androidx.compose.material.icons.filled.WaterDrop
-import java.util.Locale
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -56,6 +50,7 @@ import com.example.temporaptor.data.Terrarium
 import com.example.temporaptor.ui.theme.AirHumidityBlue
 import com.example.temporaptor.ui.theme.SoilMoistureCyan
 import com.example.temporaptor.ui.theme.TempOrange
+import java.util.Locale
 
 @Composable
 fun AnalyticsScreen(
@@ -66,7 +61,7 @@ fun AnalyticsScreen(
 ) {
     val scrollState = rememberScrollState()
     var selectedMetricTab by remember { mutableIntStateOf(0) } // 0: Temp, 1: Air Hum, 2: Soil Hum
-    var selectedTimeframe by remember { mutableStateOf("24 Hours") }
+    var selectedTimeframe by remember { mutableStateOf("24 Horas") }
 
     val activeColor = when (selectedMetricTab) {
         0 -> TempOrange
@@ -92,6 +87,8 @@ fun AnalyticsScreen(
             else -> point.soilHumidity
         }
     }
+
+    val labels = historyData.map { it.timeLabel }
 
     val avgVal = if (activePoints.isNotEmpty()) activePoints.average().toFloat() else 0f
     val maxVal = activePoints.maxOrNull() ?: 0f
@@ -155,9 +152,9 @@ fun AnalyticsScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Metric selector tabs
+        // Metric Tabs Selector
         PrimaryTabRow(
             selectedTabIndex = selectedMetricTab,
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -166,137 +163,133 @@ fun AnalyticsScreen(
             Tab(
                 selected = selectedMetricTab == 0,
                 onClick = { selectedMetricTab = 0 },
-                text = { Text("Temperatura", fontSize = 12.sp, fontWeight = FontWeight.Bold) },
-                icon = { Icon(Icons.Default.Thermostat, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                text = { Text("Temperatura", fontWeight = FontWeight.Bold, fontSize = 12.sp) }
             )
             Tab(
                 selected = selectedMetricTab == 1,
                 onClick = { selectedMetricTab = 1 },
-                text = { Text("Humedad Aire", fontSize = 12.sp, fontWeight = FontWeight.Bold) },
-                icon = { Icon(Icons.Default.WaterDrop, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                text = { Text("Hum. Aire", fontWeight = FontWeight.Bold, fontSize = 12.sp) }
             )
             Tab(
                 selected = selectedMetricTab == 2,
                 onClick = { selectedMetricTab = 2 },
-                text = { Text("Humedad Tierra", fontSize = 12.sp, fontWeight = FontWeight.Bold) },
-                icon = { Icon(Icons.Default.Grass, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                text = { Text("Hum. Tierra", fontWeight = FontWeight.Bold, fontSize = 12.sp) }
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Interactive Canvas Line Chart Card
+        // Metric Statistics Summary Cards
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            StatCard(
+                title = "Promedio",
+                value = String.format(Locale.getDefault(), "%.1f%s", avgVal, activeUnit),
+                color = activeColor,
+                modifier = Modifier.weight(1f)
+            )
+            StatCard(
+                title = "Mínimo",
+                value = String.format(Locale.getDefault(), "%.1f%s", minVal, activeUnit),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            StatCard(
+                title = "Máximo",
+                value = String.format(Locale.getDefault(), "%.1f%s", maxVal, activeUnit),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Main Chart Card
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(modifier = Modifier.padding(18.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = activeMetricName,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = "Gráfico $selectedTimeframe",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    Text(
-                        text = "Prom: ${String.format(Locale.getDefault(), "%.1f", avgVal)}$activeUnit",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = activeColor
-                    )
-                }
+                Text(
+                    text = "Gráfico en Tiempo Real - $activeMetricName",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Valores registrados durante el período seleccionado",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Line Chart Canvas
                 CustomMetricChart(
                     points = activePoints,
-                    labels = historyData.map { it.timeLabel },
+                    labels = labels,
                     lineColor = activeColor,
                     unit = activeUnit,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(180.dp)
                 )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Time labels row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    labels.forEach { label ->
+                        Text(
+                            text = label,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Quick Stats Summary Row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            StatCard(
-                title = "Máximo Registrado",
-                value = "${String.format(Locale.getDefault(), "%.1f", maxVal)}$activeUnit",
-                color = activeColor,
-                modifier = Modifier.weight(1f)
-            )
-            StatCard(
-                title = "Mínimo Registrado",
-                value = "${String.format(Locale.getDefault(), "%.1f", minVal)}$activeUnit",
-                color = activeColor,
-                modifier = Modifier.weight(1f)
-            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Event Log & Recent Alerts Section
+        // Section Title: Recent Alerts
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 12.dp)
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.History,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Historial de Eventos & Automatizaciones",
+                text = "Historial de Registro de Alertas",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
+
+            Icon(
+                imageVector = Icons.Default.History,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
         }
 
-        recentAlerts.forEach { alert ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 10.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Row(
-                    modifier = Modifier.padding(14.dp),
-                    verticalAlignment = Alignment.Top
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            recentAlerts.forEach { alert ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .padding(top = 4.dp)
-                            .background(if (alert.isCritical) MaterialTheme.colorScheme.error else activeColor, CircleShape)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
+                    Column(modifier = Modifier.padding(14.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -343,7 +336,7 @@ private fun CustomMetricChart(
 
     Canvas(modifier = modifier) {
         val width = size.width
-        val height = size.height - 30f // Reserve bottom space for time labels
+        val height = size.height - 20f
 
         val stepX = width / (points.size - 1).coerceAtLeast(1)
 

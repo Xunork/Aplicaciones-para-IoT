@@ -15,40 +15,43 @@ private val DarkColorScheme = darkColorScheme(
     primary = EmeraldAccent,
     onPrimary = Color.White,
     primaryContainer = JungleGreenPrimary,
-    onPrimaryContainer = Color.White,
+    onPrimaryContainer = Color(0xFFD1FAE5),
     secondary = AmberGlow,
     onSecondary = Color.Black,
-    secondaryContainer = DarkSlateCard,
+    secondaryContainer = ReptileDarkCard,
     tertiary = TempOrange,
-    background = DarkSlateBackground,
-    surface = DarkSlateSurface,
-    surfaceVariant = DarkSlateCard,
-    onBackground = Color(0xFFF3F4F6),
-    onSurface = Color(0xFFF3F4F6),
-    onSurfaceVariant = Color(0xFFD1D5DB)
+    background = ReptileDarkBackground,
+    surface = ReptileDarkSurface,
+    surfaceVariant = ReptileDarkCard,
+    outline = ReptileDarkCardBorder,
+    onBackground = Color(0xFFECFDF5),
+    onSurface = Color(0xFFECFDF5),
+    onSurfaceVariant = Color(0xFFA7F3D0)
 )
 
+// Soft, glare-free, eye-friendly light terrarium theme
 private val LightColorScheme = lightColorScheme(
-    primary = JungleGreenPrimary,
+    primary = SoftForestGreen,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFDCFCE7),
-    onPrimaryContainer = JungleGreenPrimary,
+    primaryContainer = Color(0xFFD3E8DC),
+    onPrimaryContainer = SoftForestGreen,
     secondary = WarmTerracotta,
     onSecondary = Color.White,
     secondaryContainer = Color(0xFFFEF3C7),
     tertiary = TempOrange,
-    background = LightBackground,
-    surface = LightSurface,
-    surfaceVariant = LightCard,
-    onBackground = Color(0xFF0F172A),
-    onSurface = Color(0xFF0F172A),
-    onSurfaceVariant = Color(0xFF475569)
+    background = SoftSageBackground,
+    surface = SoftSageSurface,
+    surfaceVariant = SoftSageCard,
+    outline = SoftSageBorder,
+    onBackground = SoftTextDark,
+    onSurface = SoftTextDark,
+    onSurfaceVariant = Color(0xFF385E49)
 )
 
 @Composable
 fun TemporaptorTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Use our custom reptilian theme by default
+    dynamicColor: Boolean = false, // Preserve reptilian theme identity
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

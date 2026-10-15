@@ -1,5 +1,6 @@
 package com.example.temporaptor.ui.screens
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,20 +20,21 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
-import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Nightlight
 import androidx.compose.material.icons.filled.NotificationsActive
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Thermostat
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -41,7 +43,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -60,11 +61,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.temporaptor.SensorScanActivity
+import com.example.temporaptor.ui.components.TerrariumNotificationDialog
+import com.example.temporaptor.ui.components.TurtleHeadIcon
 import com.example.temporaptor.ui.theme.EmeraldAccent
 
 @Composable
 fun ProfileScreen(
     userName: String,
+    isDarkTheme: Boolean,
+    onToggleDarkTheme: (Boolean) -> Unit,
     onUpdateUserName: (String) -> Unit,
     onViewOnboarding: () -> Unit,
     onLogout: () -> Unit,
@@ -75,13 +81,13 @@ fun ProfileScreen(
 
     var showEditProfileDialog by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showNotificationsDialog by remember { mutableStateOf(false) }
     var showLegalDialog by remember { mutableStateOf<String?>(null) } // "terms" or "privacy"
 
     // Settings states
     var isCelsiusUnit by remember { mutableStateOf(true) }
     var pushNotificationsEnabled by remember { mutableStateOf(true) }
     var emailAlertsEnabled by remember { mutableStateOf(true) }
-    var isDarkTheme by remember { mutableStateOf(true) }
     var selectedLanguage by remember { mutableStateOf("Español") }
 
     Box(
@@ -113,12 +119,7 @@ fun ProfileScreen(
                             modifier = Modifier.size(80.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.Pets,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(42.dp)
-                                )
+                                TurtleHeadIcon(size = 48.dp)
                             }
                         }
 
@@ -156,7 +157,7 @@ fun ProfileScreen(
                         color = EmeraldAccent.copy(alpha = 0.2f)
                     ) {
                         Text(
-                            text = "🦎 Herpetólogo Pro • Conectado",
+                            text = "🐢 Herpetólogo Pro • Conectado",
                             color = EmeraldAccent,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
@@ -168,8 +169,8 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Section 1: Preferencias de la App
-            SectionHeader(title = "Preferencias de la App")
+            // Section 1: Preferencias de Tema & Apariencia (Modo Claro / Oscuro)
+            SectionHeader(title = "Apariencia & Tema de la App")
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -177,6 +178,20 @@ fun ProfileScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
+                    // Dark / Light Theme Toggle Switch
+                    SettingToggleRow(
+                        title = "Tema de Pantalla (Claro / Oscuro)",
+                        subtitle = if (isDarkTheme) "Modo Oscuro Reptil (Noche)" else "Modo Claro Terrario (Día)",
+                        icon = if (isDarkTheme) Icons.Default.Nightlight else Icons.Default.WbSunny,
+                        checked = isDarkTheme,
+                        onCheckedChange = {
+                            onToggleDarkTheme(it)
+                            Toast.makeText(context, "Tema cambiado a ${if (it) "Modo Oscuro" else "Modo Claro"}", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outlineVariant)
+
                     // Temperature Units Toggle
                     SettingToggleRow(
                         title = "Unidad de Temperatura",
@@ -206,8 +221,8 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Section 2: Notificaciones & Alertas
-            SectionHeader(title = "Notificaciones & Alertas")
+            // Section 2: Permisos en Android & IoT
+            SectionHeader(title = "Permisos en Android & Sensores")
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -215,9 +230,63 @@ fun ProfileScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
+                    SettingActionRow(
+                        title = "Escaneo de Sensores (SensorScanActivity)",
+                        valueText = "Abrir Activity",
+                        icon = Icons.Default.Bluetooth,
+                        onClick = {
+                            val intent = Intent(context, SensorScanActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outlineVariant)
+
+                    SettingActionRow(
+                        title = "Permiso de Ubicación & BLE",
+                        valueText = "Activo",
+                        icon = Icons.Default.LocationOn,
+                        onClick = {
+                            Toast.makeText(context, "Permiso de ubicación activo para bluetooth BLE", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outlineVariant)
+
+                    SettingActionRow(
+                        title = "Permiso de Cámara QR",
+                        valueText = "Activo",
+                        icon = Icons.Default.CameraAlt,
+                        onClick = {
+                            Toast.makeText(context, "Permiso de cámara disponible para código QR de terrarios", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Section 3: Notificaciones Emergentes & Alertas
+            SectionHeader(title = "Notificaciones Emergentes & Alertas")
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    SettingActionRow(
+                        title = "Ver Ventana Emergente de Alertas",
+                        valueText = "Probar Pop-Up",
+                        icon = Icons.Default.NotificationsActive,
+                        onClick = { showNotificationsDialog = true }
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outlineVariant)
+
                     SettingToggleRow(
                         title = "Notificaciones PUSH",
-                        subtitle = "Alertas inmediatas en el móvil por lecturas fuera de rango",
+                        subtitle = "Pop-ups inmediatos en el móvil por lecturas fuera de rango",
                         icon = Icons.Default.NotificationsActive,
                         checked = pushNotificationsEnabled,
                         onCheckedChange = { pushNotificationsEnabled = it }
@@ -237,7 +306,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Section 3: Legal, Tutorial & Ayuda
+            // Section 4: Legal, Tutorial & Ayuda
             SectionHeader(title = "Soporte & Información Legal")
 
             Card(
@@ -275,7 +344,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Section 4: Logout Button
+            // Section 5: Logout Button
             Button(
                 onClick = { showLogoutDialog = true },
                 modifier = Modifier.fillMaxWidth(),
@@ -294,6 +363,13 @@ fun ProfileScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // ==================== NOTIFICATIONS POPUP DIALOG ====================
+        if (showNotificationsDialog) {
+            TerrariumNotificationDialog(
+                onDismiss = { showNotificationsDialog = false }
+            )
         }
 
         // ==================== EDIT PROFILE DIALOG ====================
@@ -350,7 +426,7 @@ fun ProfileScreen(
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                     ) {
-                        Text("Sí, Cerrar Sesión")
+                        Text("Cerrar Sesión", color = Color.White)
                     }
                 },
                 dismissButton = {
@@ -361,28 +437,28 @@ fun ProfileScreen(
             )
         }
 
-        // ==================== LEGAL TERMS & PRIVACY DIALOG ====================
-        showLegalDialog?.let { type ->
+        // ==================== LEGAL DIALOG ====================
+        if (showLegalDialog != null) {
             AlertDialog(
                 onDismissRequest = { showLegalDialog = null },
                 title = {
                     Text(
-                        text = if (type == "terms") "Términos de Servicio" else "Política de Privacidad",
+                        text = if (showLegalDialog == "terms") "Términos de Servicio" else "Política de Privacidad",
                         fontWeight = FontWeight.Bold
                     )
                 },
                 text = {
                     Text(
-                        if (type == "terms") {
-                            "Al utilizar TempoRaptor, te comprometes a hacer un uso responsable de los controles automatizados de calefacción y humedad de tus terrarios para garantizar el bienestar animal de tus reptiles exóticos."
-                        } else {
-                            "TempoRaptor respeta tu privacidad. La información de los sensores de tus terrarios y tus datos personales están cifrados y nunca se compartirán con terceros sin tu consentimiento."
-                        }
+                        text = if (showLegalDialog == "terms")
+                            "Al utilizar TempoRaptor, te comprometes a proveer condiciones óptimas de bienestar para tus reptiles, asegurando lecturas precisas mediante sensores calibrados."
+                        else
+                            "TempoRaptor procesa datos de sensores ambientalistas (temperatura y humedad) para ejecutar acciones automatizadas. Tus datos personales y la privacidad de tu hábitat están encriptados.",
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 },
                 confirmButton = {
                     Button(onClick = { showLegalDialog = null }) {
-                        Text("Entendido")
+                        Text("Aceptar")
                     }
                 }
             )
@@ -394,9 +470,9 @@ fun ProfileScreen(
 private fun SectionHeader(title: String) {
     Text(
         text = title,
-        style = MaterialTheme.typography.titleSmall,
+        style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        color = MaterialTheme.colorScheme.onBackground,
         modifier = Modifier.padding(bottom = 8.dp)
     )
 }
@@ -420,36 +496,35 @@ private fun SettingToggleRow(
         ) {
             Surface(
                 shape = CircleShape,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                color = MaterialTheme.colorScheme.primaryContainer,
                 modifier = Modifier.size(36.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = icon,
-                        contentDescription = title,
+                        contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
             }
+
             Spacer(modifier = Modifier.width(12.dp))
+
             Column {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
-
-        Spacer(modifier = Modifier.width(8.dp))
 
         Switch(
             checked = checked,
@@ -468,7 +543,7 @@ private fun SettingActionRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .clickable(onClick = onClick)
             .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -479,23 +554,25 @@ private fun SettingActionRow(
         ) {
             Surface(
                 shape = CircleShape,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                color = MaterialTheme.colorScheme.primaryContainer,
                 modifier = Modifier.size(36.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = icon,
-                        contentDescription = title,
+                        contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
             }
+
             Spacer(modifier = Modifier.width(12.dp))
+
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
@@ -504,16 +581,15 @@ private fun SettingActionRow(
             Text(
                 text = valueText,
                 style = MaterialTheme.typography.bodyMedium,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(6.dp))
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(20.dp)
             )
         }
     }

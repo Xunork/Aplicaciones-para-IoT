@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.temporaptor.data.ReptileSpeciesInfo
+import com.example.temporaptor.ui.components.TurtleHeadIcon
 import com.example.temporaptor.ui.theme.AirHumidityBlue
 import com.example.temporaptor.ui.theme.SoilMoistureCyan
 import com.example.temporaptor.ui.theme.TempOrange
@@ -58,7 +59,7 @@ fun SpeciesGuideScreen(
 ) {
     var selectedCategory by remember { mutableStateOf("Todos") }
 
-    val categories = listOf("Todos", "Arbóreo Tropical", "Desértico / Árido", "Subtropical / Sabana", "Arbóreo Húmedo")
+    val categories = listOf("Todos", "Desértico / Árido", "Arbóreo Tropical", "Subtropical / Sabana", "Terrestre / Templado", "Semiacuático")
 
     val filteredList = if (selectedCategory == "Todos") {
         speciesList
@@ -164,12 +165,7 @@ private fun SpeciesCard(
                         modifier = Modifier.size(40.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Default.Pets,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(22.dp)
-                            )
+                            TurtleHeadIcon(size = 24.dp)
                         }
                     }
                     Spacer(modifier = Modifier.width(12.dp))
@@ -258,7 +254,7 @@ private fun SpeciesCard(
 
             // Care tip
             Text(
-                text = "💡 Consejo: ${species.careNotes}",
+                text = "💡 Manejo del Sustrato & Gradiente: ${species.careNotes}",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.primary
